@@ -21,7 +21,7 @@ t = 30e-9;
 
 t_nm = t*1e9;
 rhoTot = 1.2935*t_nm^(-0.4716) * 1e-6;  % Ohm.m
-deltaRho = 0.04*rhoTot;
+deltaRho = 0.02*rhoTot;
 rhoT = (3*rhoTot - deltaRho)/3;
 rCoeff = deltaRho/rhoT;
 
