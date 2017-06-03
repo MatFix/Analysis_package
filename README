@@ -1,0 +1,11 @@
+ANALYSIS SOFTWARE FOR MICROMAGNETIC SIMULATIONS
+
+Includes:
+
+- Hysteresis.m reads and plots hysteresis cycles from the table.txt file
+
+- peakfinder.m renames and scans .ovf files to find the peak location and plots its time evolution
+
+- magnetoelastic.m reads the data on strained circular dots and plots the phase along the rim
+
+- AMR_pde.m solves nonlinear laplace's equations to calculate the anisotropic magnetoresistance as a function of B
