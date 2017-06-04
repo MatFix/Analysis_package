@@ -34,7 +34,7 @@ yy = linspace(-1,1,Ny);
 %% Files folder and files rename
 
 dailyFolder = 'D:\Program Files\mumax\Simulazioni\AMR\';
-simulationFolder = 'nanodots_hysteresis_1_dot_longer\';
+simulationFolder = 'rectl.out\';
 
 folder = [dailyFolder simulationFolder];            % folder containing files
 PythonScript = 'batchRenamer.py';                   % Python rename script
@@ -62,6 +62,7 @@ N = length(B);
 % preallocation
 
 R = zeros(size(B));
+errorJ = zeros(size(B));
 
 %% Create a PDE Model with a single dependent variable
 numberOfPDE = 1;
@@ -70,17 +71,15 @@ pdem = createpde(numberOfPDE);
 a = 0;
 f = 0;
 
-load('variables')
+load('variables_rect_3')
 
 g = decsg(gd,sf,ns);
 geometryFromEdges(pdem,g);
 
-applyBoundaryCondition(pdem,'Edge',5, 'u', 1);
-applyBoundaryCondition(pdem,'Edge',6, 'u', 1);
-applyBoundaryCondition(pdem,'Edge',7, 'u', -1);
-applyBoundaryCondition(pdem,'Edge',8, 'u', -1);
+applyBoundaryCondition(pdem,'Edge',4, 'u', 1);
+applyBoundaryCondition(pdem,'Edge',2, 'u', -1);
 
-generateMesh(pdem,'Hmax',0.05);
+generateMesh(pdem,'Hmax',0.2);
 
 [X,Y] = meshgrid(xx);
 querypoints = [X(:),Y(:)]';
@@ -137,7 +136,6 @@ for kk = 1:N
     % Print state to console
     fprintf_r('Step completed: %i',kk);
 end
-
 fprintf_r('reset');
 fprintf('\n');
 
