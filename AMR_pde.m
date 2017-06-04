@@ -80,7 +80,7 @@ applyBoundaryCondition(pdem,'Edge',6, 'u', 1);
 applyBoundaryCondition(pdem,'Edge',7, 'u', -1);
 applyBoundaryCondition(pdem,'Edge',8, 'u', -1);
 
-generateMesh(pdem,'Hmax',0.1);
+generateMesh(pdem,'Hmax',0.05);
 
 [X,Y] = meshgrid(xx);
 querypoints = [X(:),Y(:)]';

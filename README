@@ -8,4 +8,4 @@ Includes:
 
 - magnetoelastic.m reads the data on strained circular dots and plots the phase along the rim
 
-- AMR_pde.m solves nonlinear laplace's equations to calculate the anisotropic magnetoresistance as a function of B
+- AMR_pde.m solves nonlinear Laplace's equations to calculate the anisotropic magnetoresistance as a function of B
