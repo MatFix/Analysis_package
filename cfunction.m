@@ -1,26 +1,22 @@
-function ccoeff = cfunction_altered(x,y,ux,uy)
+function ccoeff = cfunction(x,y,ux,uy)
 
 global xx yy Mx My rCoeff
 
-xpts = x;
-ypts = y;
-
-
 % rescaled vectors initialization
-m_resc_x = zeros(1,length(xpts));
+m_resc_x = zeros(1,length(x));
 m_resc_y = m_resc_x;
 
 % magnetization at mesh centers coordinates
-for ii = 1: length(xpts)
+for ii = 1: length(x)
     
-    tmp = abs(xpts(ii) - xx);
+    tmp = abs(x(ii) - xx);
     [~, idx] = min(tmp);
     
-    tmp = abs(ypts(ii) - yy);
+    tmp = abs(y(ii) - yy);
     [~, idy] = min(tmp);
     
-    m_resc_x(ii) = Mx(idx,idy);
-    m_resc_y(ii) = My(idx,idy);
+    m_resc_x(ii) = Mx(idy,idx);
+    m_resc_y(ii) = My(idy,idx);
 end
 
 % the |delta u| is required to rescale the gradient to a unit vector
