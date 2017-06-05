@@ -1,4 +1,3 @@
-
 clear variables
 close all
 
@@ -21,7 +20,7 @@ t = 30e-9;
 
 t_nm = t*1e9;
 rhoTot = 1.2935*t_nm^(-0.4716) * 1e-6;  % Ohm.m
-deltaRho = 0.02*rhoTot;
+deltaRho = 0.03*rhoTot;
 rhoT = (3*rhoTot - deltaRho)/3;
 rCoeff = deltaRho/rhoT;
 
@@ -62,29 +61,35 @@ N = length(B);
 % preallocation
 
 R = zeros(size(B));
+R_simple = zeros(size(B));
 
 %% Create a PDE Model with a single dependent variable
+
 numberOfPDE = 1;
 pdem = createpde(numberOfPDE);
 
 a = 0;
 f = 0;
+deltaV = 2;
 
 load('variables')
 
 g = decsg(gd,sf,ns);
 geometryFromEdges(pdem,g);
 
-applyBoundaryCondition(pdem,'Edge',5, 'u', 1);
-applyBoundaryCondition(pdem,'Edge',6, 'u', 1);
-applyBoundaryCondition(pdem,'Edge',7, 'u', -1);
-applyBoundaryCondition(pdem,'Edge',8, 'u', -1);
+applyBoundaryCondition(pdem,'Edge',5, 'u', +deltaV/2);
+applyBoundaryCondition(pdem,'Edge',6, 'u', +deltaV/2);
+applyBoundaryCondition(pdem,'Edge',7, 'u', -deltaV/2);
+applyBoundaryCondition(pdem,'Edge',8, 'u', -deltaV/2);
 
-generateMesh(pdem,'Hmax',0.1);
+generateMesh(pdem,'Hmax',0.03);
 
 [X,Y] = meshgrid(xx);
 querypoints = [X(:),Y(:)]';
 
+% line of integration
+
+lx = 21;
 
 %%
 n = 0;
@@ -100,12 +105,20 @@ for kk = 1:N
     mx = Mread(:,1);
     my = Mread(:,2);
     
-    Mx = (reshape(mx(end:-1:1), [Nx,Ny]));
-    My = (reshape(my(end:-1:1), [Nx,Ny]));
+    % Mx and My are arranged so that their indices M(m,n) go like y,x:
+    % mx = [1 2 3 4 5 6 7 8]'
+    %
+    % Mx = [5 6 7 8;
+    %       1 2 3 4]
+    % This ensures that the PDE results and the matrices are arranged in
+    % the same way
     
+    Mx = flip((reshape(mx, [Ny,Nx]))');
+    My = flip((reshape(my, [Ny,Nx]))');
+ 
     clear mx my Mread
     
-    u = pdenonlin(pdem,'cfunction_altered(x,y,ux,uy)',a,f);
+    u = pdenonlin(pdem,'cfunction_altered_prova(x,y,ux,uy)',a,f);
     
     result = createPDEResults(pdem,u);
     uintrp = interpolateSolution(result,querypoints);
@@ -116,23 +129,19 @@ for kk = 1:N
     Fx(isnan(Fx)) = 0;
     Fy(isnan(Fy)) = 0;
     
-    modulus_squared = Fx(:,20).^2 + Fy(:,20).^2;
+    modulus_squared = Fx(:,lx).^2 + Fy(:,lx).^2;
     
     if mean(modulus_squared) == 0
         modulus_squared = 1;
     end
     
-    sigma_line = 1./(rhoT + deltaRho./modulus_squared.*(Mx(:,20).*Fx(:,20) + My(:,20).*Fy(:,20)).^2);
+    sigma_line = 1./(rhoT + deltaRho./modulus_squared.*(Mx(:,lx).*Fx(:,lx) + My(:,lx).*Fy(:,lx)).^2);
     
     sigma_line(isnan(sigma_line)) = 0;
     
+    S = - t*trapz(Fx(:,lx).*sigma_line);
     
-    aaa = -trapz(t*Fx(:,20).*sigma_line);
-    bbb = -trapz(t*Fx(:,20)/rhoT);
-    
-    R(kk) = abs(2/aaa);
-    
-    errorJ(kk) = abs((aaa - bbb)/aaa);
+    R(kk) = abs(deltaV/S);
     
     % Print state to console
     fprintf_r('Step completed: %i',kk);
@@ -170,6 +179,11 @@ legend([a b], 'B ascending', 'B descending')
 xlabel('B [T]')
 ylabel('R [\Omega]')
 title('Anisotropic magnetoresistance with current parallel to applied field')
-
+%%
+% potential distribution at B = max
 figure
-plot(B,errorJ)
+pdeplot(pdem,'xydata',u,'zdata',u)
+colormap parula
+grid on
+string = sprintf('Potential distribution at B = %i mT', max(B)*1e3);
+title(string)
