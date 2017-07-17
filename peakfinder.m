@@ -51,7 +51,7 @@ T = 'yes';
 %% Files folder and files rename
 
 dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\temperature\static\';
-simulationFolder = 'temperature_static_320nm_80K\';
+simulationFolder = 'temperature_static_320nm_300K\';
 
 folder = [dailyFolder simulationFolder];            % folder containing files
 PythonScript = 'batchRenamer.py';                   % Python rename script
@@ -305,4 +305,4 @@ fileID = fopen([folder '\VC_RMS.txt'],'w');
 fprintf(fileID,string2);
 fclose(fileID);    
     
-    
+saveas(gcf, [folder '\VCD'], 'fig')    
