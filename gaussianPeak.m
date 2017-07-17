@@ -12,11 +12,11 @@ function [cx,cy,sigmax,sigmay] = gaussianPeak(Mmat,m,n,n_int)
 xx = log(abs(Mmat(n,m-n_int:m+n_int)));
 yy = log(abs(Mmat(n-n_int:n+n_int,m)))';
 
-%Px = polyfit(m-n_int:m+n_int,xx,2);
-%Py = polyfit(n-n_int:n+n_int,yy,2);
+Px = polyfit(m-n_int:m+n_int,xx,2);
+Py = polyfit(n-n_int:n+n_int,yy,2);
 
-Px = linFit(m-n_int:m+n_int,xx,2);
-Py = linFit(n-n_int:n+n_int,yy,2);
+% Px = linFit(m-n_int:m+n_int,xx,2);
+% Py = linFit(n-n_int:n+n_int,yy,2);
 
 cx = -Px(2)/(2*Px(1));
 cy = -Py(2)/(2*Py(1));

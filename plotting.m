@@ -27,6 +27,7 @@ surface([x;x],[y;y],[z;z],[col;col],...
 'facecol','no',...
 'edgecol','flat',...
 'linew',2);
+axis square
 axis equal
 grid on
 xlabel('x [nm]')
@@ -40,11 +41,11 @@ rr = plot(0,0,'color',[0.8500,0.3250,0.0980],'linewidth',2);
 title('Vortex core trajectory')
 legend([a b ll rr],'Startpoint','Endpoint','\itp\rm = +1','\itp\rm = -1')
 
-phi = 0:0.001:2*pi;
-maxis = 300 * cos(phi);
-Maxis = 500 * sin(phi);
-plot(maxis,Maxis,'--','color',[0,0.4470,0.7410],'linewidth',2)
-
+% phi = 0:0.001:2*pi;
+% maxis = 300 * cos(phi);
+% Maxis = 500 * sin(phi);
+% plot(maxis,Maxis,'--','color',[0,0.4470,0.7410],'linewidth',2)
+% 
 saveas(gcf, [folder '\trajectory1'], 'fig')
 
 %% Trajectory 2
@@ -52,7 +53,7 @@ saveas(gcf, [folder '\trajectory1'], 'fig')
 figure(2)
 
 plot(x(ceil(N/3):end),y(ceil(N/3):end),'linewidth',1.5)
-axis equal
+axis square
 grid on
 xlabel('x [nm]')
 ylabel('y [nm]')

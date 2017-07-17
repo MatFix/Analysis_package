@@ -290,19 +290,11 @@ xC = mean(Xs.signal);
 yC = mean(Ys.signal);
 
 
-figure
-plot3(time,Xs.signal,Ys.signal,'linewidth',2)
-hold on
+f
+plot3(time,Xs.signal,Ys.signal,'linewidth',6)
 plot3(time,ones(length(time))*xC, ones(length(time))*yC,'k--','linewidth',3)
-view([17.3, 33.2])
-grid on
-xlabel('Time [s]')
-ylabel('X [nm]')
-zlabel('Y [nm]')
-title('Vortex core movement (smoothed)')
+
     
-fileID = fopen([folder '\VC_RMS.txt'],'w');
-fprintf(fileID,string2);
-fclose(fileID);    
+    
     
     

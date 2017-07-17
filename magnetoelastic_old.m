@@ -4,19 +4,19 @@ close all
 
 %% Simulation parameters
 
-Nx = 64;
-Ny = 64;
+Nx = 160;
+Ny = 160;
 c = 5e-9;                          % cell size
 
-N = 2;                           % number of data files
+N = 1;                           % number of data files
 
 % files renaming
-rename = false;
+rename = true;
 
 %% Files folder and files rename
 
-dailyFolder = 'D:\Program Files\mumax\Simulazioni\SIMULAZIONI 25-5\';
-simulationFolder = 'nanodots_magnetoelastic_coupling_1\';
+dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\elastic\';
+simulationFolder = 'magnetoelastic_static_800nm\';
 
 folder = [dailyFolder simulationFolder];            % folder containing files
 PythonScript = 'batchRenamer.py';                   % Python rename script

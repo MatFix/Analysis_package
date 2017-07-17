@@ -5,9 +5,9 @@
 %  
 %  div * (sigma(grad(u)) * grad(u)) = 0
 % 
-%  where sigma is the AMR conductivity, depending on the reciprocal
-%  directions of the reduced magnetization m and the current density at any
-%  given point according to
+%  where sigma is the AMR conductivity, depending on the relative
+%  directions of the reduced magnetization m and the current density J at
+%  any given point according to
 %
 %  1/sigma = rhoT + deltaRho * cos(phi)^2
 %
@@ -109,7 +109,7 @@ applyBoundaryCondition(model,'Edge',7, 'u', -deltaV/2);
 applyBoundaryCondition(model,'Edge',8, 'u', -deltaV/2);
 
 % generate the mesh according the the model described
-generateMesh(model,'Hmax',0.2);
+generateMesh(model,'Hmax',0.02);
 
 % grid for the interpolation of the solution
 [X,Y] = meshgrid(xx);
