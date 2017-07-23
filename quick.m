@@ -1,5 +1,5 @@
 x = linspace(-Ny*c/2,Ny*c/2,Ny);
-y = Mmat(Ny/2 + 1,:);
+y = Mmat(32,:);
 
 Xqp = linspace(-Ny*c/2,Ny*c/2,10*Ny);
 Yqp = spline(x,y,Xqp);

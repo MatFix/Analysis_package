@@ -4,8 +4,8 @@ close all
 
 %% Simulation parameters
 
-Nx = 100;
-Ny = 100;
+Nx = 160;
+Ny = 160;
 c = 5e-9;                          % cell size
 
 k = -1;                            % handedness
@@ -16,8 +16,8 @@ rename = true;
 
 %% Files folder and files rename
 
-dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\elastic\';
-simulationFolder = 'magnetoelastic_static_500nm\';
+dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\elastic\static\normal\';
+simulationFolder = 'magnetoelastic_static_middle_ring_800nm\';
 
 folder = [dailyFolder simulationFolder];            % folder containing files
 PythonScript = 'batchRenamer.py';                   % Python rename script
@@ -130,6 +130,13 @@ saveas(gcf, [folder '\phi'], 'fig')
 
 %%
 figure
+
+%% This is to get the "true" unstressed state
+% useful in thick dots 
+
+phi_natural = phi(:,1);
+
+%
 
 for index = init:3:N
 plot(thetaVector,phi(:,index) - phi_natural,'Marker','.','LineWidth',1.3,'Markerfacecolor','auto','MarkerSize',15);

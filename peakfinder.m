@@ -16,8 +16,8 @@ close all
 
 %% Simulation parameters
 
-Nx = 64;
-Ny = 64;
+Nx = 100;
+Ny = 100;
 c = 5e-9;                          % cell size
 
 % N = 201;                           % number of data files
@@ -39,19 +39,19 @@ nFit = 2;                           % fitting points parameter
 rename = true;
 
 % saving of 3D stills
-stills = false;
+stills = true;
 skip = 3;                           % save one still every _skip_ files
 quality = 'hq';                     % high quality ('hq') or low quality
 %('lq') stills
 rf = 3;                             % refinement in hq stills (2 -- 5)
 
 % T simulation
-T = 'yes';
+T = 'no';
 
 %% Files folder and files rename
 
-dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\temperature\static\';
-simulationFolder = 'temperature_static_320nm_300K\';
+dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\elastic\dynamic\reversal\current_vertical\'; 
+simulationFolder = 'nanodot_current_rev_500_nm\';
 
 folder = [dailyFolder simulationFolder];            % folder containing files
 PythonScript = 'batchRenamer.py';                   % Python rename script
@@ -282,27 +282,47 @@ if strcmp(T,'yes')
     Ys = SFilt(R(:,2),time);
     
     auxstr = sprintf('Y %.2f nm', Ys.amplitudeRMS * 1e9);
-    string2 = sprintf('RMS VC movement: X %.2f nm\r\n %25s' , Xs.amplitudeRMS * 1e9, auxstr);   
+    string2 = sprintf('RMS VC movement: X %.2f nm\r\n %25s' , Xs.amplitudeRMS * 1e9, auxstr);
     disp(string2)
+    
+    xC = mean(Xs.signal);
+    yC = mean(Ys.signal);
+    
+    
+    figure
+    plot3(time,Xs.signal,Ys.signal,'linewidth',2)
+    hold on
+    plot3(time,ones(length(time))*xC, ones(length(time))*yC,'k--','linewidth',3)
+    view([17.3, 33.2])
+    grid on
+    xlabel('Time [s]')
+    ylabel('X [nm]')
+    zlabel('Y [nm]')
+    title('Vortex core movement (smoothed)')
+    
+    fileID = fopen([folder '\VC_RMS.txt'],'w');
+    fprintf(fileID,string2);
+    fclose(fileID);
+    
+    saveas(gcf, [folder '\VCD'], 'fig')
+    
 end
 
-xC = mean(Xs.signal);
-yC = mean(Ys.signal);
+%% R RMS
 
+tCO = 1e-8;
+AA = time >= tCO;
+bb = find(AA);
 
-figure
-plot3(time,Xs.signal,Ys.signal,'linewidth',2)
-hold on
-plot3(time,ones(length(time))*xC, ones(length(time))*yC,'k--','linewidth',3)
-view([17.3, 33.2])
-grid on
-xlabel('Time [s]')
-ylabel('X [nm]')
-zlabel('Y [nm]')
-title('Vortex core movement (smoothed)')
-    
-fileID = fopen([folder '\VC_RMS.txt'],'w');
-fprintf(fileID,string2);
-fclose(fileID);    
-    
-saveas(gcf, [folder '\VCD'], 'fig')    
+VRMS = sqrt(1/(time(end) - time(bb(1))) * trapz(time(AA), V(AA).^2));
+
+R_avg = VRMS/(2*pi*f(X == max(X)));
+disp(R_avg)
+
+V_avg = mean(V(AA));
+stringV = sprintf('Mean velocity: %.1f m/s',V_avg);
+disp(stringV)
+
+fileID = fopen([folder '\VC_Vmean.txt'],'w');
+    fprintf(fileID,stringV);
+fclose(fileID);
