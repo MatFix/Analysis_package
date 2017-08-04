@@ -39,19 +39,19 @@ nFit = 2;                           % fitting points parameter
 rename = true;
 
 % saving of 3D stills
-stills = true;
-skip = 3;                           % save one still every _skip_ files
+stills = false;
+skip = 2;                           % save one still every _skip_ files
 quality = 'hq';                     % high quality ('hq') or low quality
 %('lq') stills
 rf = 3;                             % refinement in hq stills (2 -- 5)
 
-% T simulation
-T = 'no';
+% T simulation yes/no
+T = 'yes';
 
 %% Files folder and files rename
 
-dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\elastic\dynamic\reversal\current_vertical\'; 
-simulationFolder = 'nanodot_current_rev_500_nm\';
+dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\temperature\reversal\'; 
+simulationFolder = 'nanodot_current_rev_Tmod_alternate_50K\';
 
 folder = [dailyFolder simulationFolder];            % folder containing files
 PythonScript = 'batchRenamer.py';                   % Python rename script
@@ -275,6 +275,20 @@ fileID = fopen([folder '\resonance.txt'],'w');
 fprintf(fileID,string);
 fclose(fileID);
 
+% Find peak separation, hardlimited to 1 GHz resonance (> 1 ns)
+
+hardLimit = 1; %GHz
+
+ySignal = R(:,2);
+timeStep = mean(diff(time));
+meanSignal = mean(ySignal);
+ySignal(ySignal< meanSignal) = meanSignal;
+
+[~,peaks] = findpeaks(ySignal,'MinPeakDistance', hardLimit*1e-9/timeStep);
+
+freqAlt = 1/mean(diff(time(peaks)));
+fprintf('Alternate resonant frequency: %.0f MHz \n', freqAlt*1e-6);
+
 %% Denoising and compare (for T simulation)
 
 if strcmp(T,'yes')
@@ -310,19 +324,53 @@ end
 
 %% R RMS
 
-tCO = 1e-8;
-AA = time >= tCO;
-bb = find(AA);
+tCO = 1e-8;        % Cutoff time     
 
-VRMS = sqrt(1/(time(end) - time(bb(1))) * trapz(time(AA), V(AA).^2));
-
-R_avg = VRMS/(2*pi*f(X == max(X)));
-disp(R_avg)
-
-V_avg = mean(V(AA));
-stringV = sprintf('Mean velocity: %.1f m/s',V_avg);
-disp(stringV)
-
-fileID = fopen([folder '\VC_Vmean.txt'],'w');
+if max(time) > tCO
+   
+    AA = time >= tCO;
+    bb = find(AA);
+    
+    VRMS = sqrt(1/(time(end) - time(bb(1))) * trapz(time(AA), V(AA).^2));
+    
+    R_avg = VRMS/(2*pi*f(X == max(X)));
+    fprintf('Average distance from centre: %.2f nm\n', R_avg*1e9)
+    
+    V_avg = mean(V(AA));
+    stringV = sprintf('Mean velocity: %.1f m/s',V_avg);
+    disp(stringV)
+    
+    fileID = fopen([folder '\VC_Vmean.txt'],'w');
     fprintf(fileID,stringV);
-fclose(fileID);
+    fclose(fileID);
+end
+
+%% Temperature from table
+
+if strcmp(T,'yes')
+    
+    fid = fopen([folder 'table.txt']);
+    fgets(fid);                                     % skip first line
+    data = cell2mat(textscan(fid, '%f %f %f %f %f %f %f %f %f %f %f %f %*[^\n]'));
+    Etot = data(:,6);
+    Etherm = data(:,12);
+    clear data
+    fclose(fid);
+    
+    inversionPoint = find(p < 0, 1) - 1;
+    
+    figure
+    a = plot(time*1e9,Etot,'linewidth',1.2);
+    hold on
+    b = plot(time*1e9,Etot - Etherm,'linewidth',1.2);
+    c = plot(time*1e9,abs(Etherm),'k','linewidth',0.8);
+    d = scatter(time(inversionPoint)*1e9,Etot(inversionPoint),'r','filled');
+    xlabel('time [ns]')
+    ylabel('Energy [J]')
+    legend([a,c,b,d],'Total energy','Thermal energy','Non-thermal energy','Reversal point')
+    legend('boxoff')
+    title('Energy of the system during reversal')
+    saveas(gcf, [folder '\energy'], 'fig')
+    hold off
+    
+end

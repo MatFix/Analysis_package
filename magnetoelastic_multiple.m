@@ -108,6 +108,9 @@ end
 delta_phi = phi - phi_natural*ones(1,N);
 %%
 
+baRatio = zeros(N,1);
+XX = thetaVector(1:end/2);
+
 Ku1 = Ku1*1e-3;         % J to kJ
 
 figure
@@ -116,6 +119,12 @@ for index = init:3:N
 plot(thetaVector,phi(:,index),'Marker','.','LineWidth',1.3,'Markerfacecolor','auto','MarkerSize',15);
 hold on
 str = strvcat(str,sprintf('%0.1f kJ \\cdot m^{-3}\n', Ku1(index)));
+end
+
+for index = 1:N
+    YY = phi(1:end/2,index);
+    fittedCurve = fit(XX,YY,'atan2d(-c^2 * cosd(x),sind(x)) + p*90','StartPoint', [1, 1]);
+    baRatio(index) = fittedCurve.c;
 end
 
 xlim([min(thetaVector) max(thetaVector) + 0.1])
@@ -128,14 +137,22 @@ hold off
 title('Spin angle')
 saveas(gcf, [folder '\phi'], 'fig')
 
+% save to file the fitted b/a ratio
+
+stringValues = sprintf('%f     %f\r\n',[baRatio,Ku1]');
+
+fileID = fopen([folder '\ba_ratio.txt'],'w');
+    fprintf(fileID,'B/A ratio -- Ku1 (kJ/m^3) \r\n');
+    fprintf(fileID,stringValues);
+fclose(fileID);
+
+
 %%
 figure
 
-%% This is to get the "true" unstressed state
+% This is to get the "true" unstressed state
 % useful in thick dots 
-
 phi_natural = phi(:,1);
-
 %
 
 for index = init:3:N
