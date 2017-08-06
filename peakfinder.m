@@ -16,8 +16,8 @@ close all
 
 %% Simulation parameters
 
-Nx = 100;
-Ny = 100;
+Nx = 64;
+Ny = 64;
 c = 5e-9;                          % cell size
 
 % N = 201;                           % number of data files
@@ -30,10 +30,9 @@ xSlicer = 0;
 ySliced = 0;
 
 maxVelocity = 550;                  % max velocity of vortex core [m/s]
-% use to limit range of vortex search
-% if == 0 the range is not limited
+                                    % use to limit range of vortex search
 
-nFit = 2;                           % fitting points parameter
+nFit = 2;                           % number of fitting points (nFit*2 + 1)
 
 % files renaming
 rename = true;
@@ -42,7 +41,7 @@ rename = true;
 stills = false;
 skip = 2;                           % save one still every _skip_ files
 quality = 'hq';                     % high quality ('hq') or low quality
-%('lq') stills
+                                    %('lq') stills
 rf = 3;                             % refinement in hq stills (2 -- 5)
 
 % T simulation yes/no
@@ -50,8 +49,8 @@ T = 'yes';
 
 %% Files folder and files rename
 
-dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\temperature\reversal\'; 
-simulationFolder = 'nanodot_current_rev_Tmod_alternate_50K\';
+dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\temperature+elastic\';
+simulationFolder = 'nanodot_320nm_150K_1000e-6\';
 
 folder = [dailyFolder simulationFolder];            % folder containing files
 PythonScript = 'batchRenamer.py';                   % Python rename script
@@ -72,7 +71,7 @@ end
 fid = fopen([folder 'A_1.ovf']);
 tline = fgets(fid);
 header = 0;
-while strcmp(tline(1),'#')                      % header lines have leading #
+while strcmp(tline(1),'#')          % header lines in files have leading #
     tline = fgets(fid);
     header = header + 1;
 end
@@ -183,10 +182,6 @@ for ii = 1:N
         n = n - dMax - 1 + nprime;
         m = m - dMax - 1 + mprime;
         
-        %         if sqrt((n - nprime)^2  + (m - mprime)^2) > dMax
-        %             continue
-        %         end
-        
         clear A
     end
     
@@ -224,7 +219,7 @@ end
 indices = find(abs([0,0;diff(R)]) > maxVelocity*dt);
 offLimitsEvent = 0;
 
-% remove unphysical peak positions through weighted mean
+% replace unphysical peak positions with a weighted mean
 for jj = 1:length(indices)
     R(indices(jj)) = 1/3 * (0.5*R(indices(jj)-2) + R(indices(jj)-1) + R(indices(jj)+1) + 0.5*R(indices(jj)+2));
     offLimitsEvent = offLimitsEvent + 1;
@@ -249,6 +244,7 @@ close all
 plotting(results);
 
 %% Fourier fransforms
+% FFT of vortex position
 
 [X,~] = fourierTransform(R(:,1),time);
 [Y,f] = fourierTransform(R(:,2),time);
@@ -275,6 +271,9 @@ fileID = fopen([folder '\resonance.txt'],'w');
 fprintf(fileID,string);
 fclose(fileID);
 
+% To check if FFT is accurate, find the resonante frequency with another
+% method: peak separation
+%
 % Find peak separation, hardlimited to 1 GHz resonance (> 1 ns)
 
 hardLimit = 1; %GHz
@@ -282,14 +281,22 @@ hardLimit = 1; %GHz
 ySignal = R(:,2);
 timeStep = mean(diff(time));
 meanSignal = mean(ySignal);
+
+% cut the signal at the mean value
 ySignal(ySignal< meanSignal) = meanSignal;
 
+% find peaks in the signal, with the hard limit
 [~,peaks] = findpeaks(ySignal,'MinPeakDistance', hardLimit*1e-9/timeStep);
 
+% avg distance of peaks gives the period
 freqAlt = 1/mean(diff(time(peaks)));
-fprintf('Alternate resonant frequency: %.0f MHz \n', freqAlt*1e-6);
+
+fprintf('Alternate resonant frequency: %.0f MHz\n', freqAlt*1e-6);
 
 %% Denoising and compare (for T simulation)
+%
+% Filter positions with a Savitzsky-Golay filter, plot them against time
+%
 
 if strcmp(T,'yes')
     Xs = SFilt(R(:,1),time);
@@ -301,7 +308,6 @@ if strcmp(T,'yes')
     
     xC = mean(Xs.signal);
     yC = mean(Ys.signal);
-    
     
     figure
     plot3(time,Xs.signal,Ys.signal,'linewidth',2)
@@ -319,15 +325,17 @@ if strcmp(T,'yes')
     fclose(fileID);
     
     saveas(gcf, [folder '\VCD'], 'fig')
-    
 end
 
 %% R RMS
+%
+% RMS distance of VC from the centre (for static T simulations)
+%
 
-tCO = 1e-8;        % Cutoff time     
+tCO = 1e-8;        % Cutoff time
 
 if max(time) > tCO
-   
+    
     AA = time >= tCO;
     bb = find(AA);
     
@@ -345,7 +353,10 @@ if max(time) > tCO
     fclose(fileID);
 end
 
-%% Temperature from table
+%% Energy
+%
+% In T simulations, read the energy and plot it against time
+%
 
 if strcmp(T,'yes')
     
