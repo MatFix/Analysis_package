@@ -16,9 +16,9 @@ close all
 
 %% Simulation parameters
 
-Nx = 64;
-Ny = 64;
-c = 5e-9;                          % cell size
+Nx = 128;
+Ny = 128;
+c = 2.5e-9;                          % cell size
 
 % N = 201;                           % number of data files
 % columns = 1;                       % number of columns of data in the files
@@ -49,8 +49,8 @@ T = 'yes';
 
 %% Files folder and files rename
 
-dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\temperature+elastic\';
-simulationFolder = 'nanodot_320nm_150K_1000e-6\';
+dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\gradient+gaussianspot\';
+simulationFolder = 'nanodot_320nm_thermal_50K_Gradient_cell_2.5nm\';
 
 folder = [dailyFolder simulationFolder];            % folder containing files
 PythonScript = 'batchRenamer.py';                   % Python rename script
@@ -238,6 +238,12 @@ ax = gradient(Vx,time);
 ay = gradient(Vy,time);
 
 results = {R, time, N, V, p, folder};
+%%
+% save time, positions, velocities
+fid = fopen([folder '\saveData.txt'],'wt');
+fprintf(fid, 'time [s]\tRx [m]\t\tRy [m]\t\tVx [m/s]\tVy [m/s]\r\n');
+fprintf(fid, '%.3e\t%.3e\t%.3e\t%.3e\t%.3e\n', [time,R(:,1),R(:,2),Vx,Vy]');
+fclose(fid); %Closes the file
 
 %% Plotting
 close all
@@ -329,7 +335,7 @@ end
 
 %% R RMS
 %
-% RMS distance of VC from the centre (for static T simulations)
+% RMS and average distance of VC from the centre (for static T simulations)
 %
 
 tCO = 1e-8;        % Cutoff time
@@ -341,15 +347,19 @@ if max(time) > tCO
     
     VRMS = sqrt(1/(time(end) - time(bb(1))) * trapz(time(AA), V(AA).^2));
     
-    R_avg = VRMS/(2*pi*f(X == max(X)));
-    fprintf('Average distance from centre: %.2f nm\n', R_avg*1e9)
+    R_RMS = VRMS/(2*pi*f(X == max(X)));
+    fprintf('RMS distance from centre: %.2f nm\n', R_RMS*1e9)
     
     V_avg = mean(V(AA));
-    stringV = sprintf('Mean velocity: %.1f m/s',V_avg);
+    stringV = sprintf('Mean velocity: %.1f m/s\n',V_avg);
     disp(stringV)
     
+    R_avg = mean(sqrt(R(AA,1).^2 + R(AA,2).^2));
+    stringR = sprintf('Average distance from centre: %.2f nm\n', R_avg*1e9);
+    disp(stringR)
     fileID = fopen([folder '\VC_Vmean.txt'],'w');
     fprintf(fileID,stringV);
+    fprintf(fileID,stringR);
     fclose(fileID);
 end
 

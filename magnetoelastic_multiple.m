@@ -17,7 +17,7 @@ rename = true;
 %% Files folder and files rename
 
 dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\elastic\static\normal\';
-simulationFolder = 'magnetoelastic_static_middle_ring_800nm\';
+simulationFolder = 'magnetoelastic_static_rings_800nm\';
 
 folder = [dailyFolder simulationFolder];            % folder containing files
 PythonScript = 'batchRenamer.py';                   % Python rename script
@@ -90,7 +90,7 @@ for kk = init:N
         end
     end
 end 
-
+%%
 thetaMatrix = reshape(theta,[],N);
 phi = reshape(phi,[], N);
 
