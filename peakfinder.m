@@ -50,7 +50,7 @@ T = 'yes';
 %% Files folder and files rename
 
 dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\gradient+gaussianspot\';
-simulationFolder = 'nanodot_320nm_thermal_50K_Gradient_cell_2.5nm\';
+simulationFolder = 'nanodot_320nm_thermal_150K_Gradient_cell_2.5nm\';
 
 folder = [dailyFolder simulationFolder];            % folder containing files
 PythonScript = 'batchRenamer.py';                   % Python rename script
@@ -330,7 +330,7 @@ if strcmp(T,'yes')
     fprintf(fileID,string2);
     fclose(fileID);
     
-    saveas(gcf, [folder '\VCD'], 'fig')
+    saveas(gcf, [folder '\VCD'], 'fig') 
 end
 
 %% R RMS
@@ -361,6 +361,24 @@ if max(time) > tCO
     fprintf(fileID,stringV);
     fprintf(fileID,stringR);
     fclose(fileID);
+    
+    % data binning
+    nbins = 20;
+    Rad = sqrt(R(AA,1).^2 + R(AA,2).^2);
+    %cut data beyond threshold
+    thresholdCutoff = 6e-9;
+    edges = linspace(0,thresholdCutoff,nbins+1);
+    [N,edges] = histcounts(Rad,edges);
+    edges(1) = [];
+    edges = edges - (edges(2) - edges(1))/2;
+    
+    figure
+    
+    scatter(edges*1e9,N,'filled')
+    xlabel('R [nm]')
+    ylabel('{\it f(R)\cdotdR} [arb. units]')
+    title('Sampling of the thermal distribution of the vortex core around the centre')
+    saveas(gcf, [folder '\distr'], 'fig')
 end
 
 %% Energy

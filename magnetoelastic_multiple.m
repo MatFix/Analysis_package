@@ -17,7 +17,7 @@ rename = true;
 %% Files folder and files rename
 
 dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\elastic\static\normal\';
-simulationFolder = 'magnetoelastic_static_rings_800nm\';
+simulationFolder = 'magnetoelastic_static_outer_ring_800nm\';
 
 folder = [dailyFolder simulationFolder];            % folder containing files
 PythonScript = 'batchRenamer.py';                   % Python rename script
@@ -106,7 +106,7 @@ for ind = init:N
 end
 
 delta_phi = phi - phi_natural*ones(1,N);
-%%
+%% Plot
 
 baRatio = zeros(N,1);
 XX = thetaVector(1:end/2);
@@ -121,12 +121,6 @@ hold on
 str = strvcat(str,sprintf('%0.1f kJ \\cdot m^{-3}\n', Ku1(index)));
 end
 
-for index = 1:N
-    YY = phi(1:end/2,index);
-    fittedCurve = fit(XX,YY,'atan2d(-c^2 * cosd(x),sind(x)) + p*90','StartPoint', [1, 1]);
-    baRatio(index) = fittedCurve.c;
-end
-
 xlim([min(thetaVector) max(thetaVector) + 0.1])
 xlabel('\theta  [°]')
 ylabel('\phi  [°]')
@@ -137,14 +131,34 @@ hold off
 title('Spin angle')
 saveas(gcf, [folder '\phi'], 'fig')
 
-% save to file the fitted b/a ratio
 
+%% find the c fitting coefficient
+
+for index = 1:N
+    YY = phi(1:end/2,index);
+    fittedCurve = fit(XX,YY,'atan2d(-c^2 * cosd(x),sind(x)) + p*90','StartPoint', [1, 1]);
+    baRatio(index) = fittedCurve.c;
+end
+
+figure
+plot(Ku1,baRatio,'linewidth',1.1)
+
+xlabel('Ku_1  [kJ \cdot m^{-3}]')
+ylabel('b/a')
+box off
+title('b/a ratio')
+saveas(gcf, [folder '\ba_ratio'], 'fig')
+
+
+% save to file the fitted b/a ratio
 stringValues = sprintf('%f     %f\r\n',[baRatio,Ku1]');
 
 fileID = fopen([folder '\ba_ratio.txt'],'w');
     fprintf(fileID,'B/A ratio -- Ku1 (kJ/m^3) \r\n');
     fprintf(fileID,stringValues);
 fclose(fileID);
+
+
 
 
 %%
