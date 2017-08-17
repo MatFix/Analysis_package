@@ -50,7 +50,7 @@ T = 'yes';
 %% Files folder and files rename
 
 dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\gradient+gaussianspot\';
-simulationFolder = 'nanodot_320nm_thermal_150K_Gradient_cell_2.5nm\';
+simulationFolder = 'nanodot_320nm_thermal_205K_Gaussian_cell_2.5nm\';
 
 folder = [dailyFolder simulationFolder];            % folder containing files
 PythonScript = 'batchRenamer.py';                   % Python rename script
@@ -363,10 +363,10 @@ if max(time) > tCO
     fclose(fileID);
     
     % data binning
-    nbins = 20;
+    nbins = 40;
     Rad = sqrt(R(AA,1).^2 + R(AA,2).^2);
     %cut data beyond threshold
-    thresholdCutoff = 6e-9;
+    thresholdCutoff = 15e-9;
     edges = linspace(0,thresholdCutoff,nbins+1);
     [N,edges] = histcounts(Rad,edges);
     edges(1) = [];
