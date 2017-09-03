@@ -16,8 +16,8 @@ close all
 
 %% Simulation parameters
 
-Nx = 128;
-Ny = 128;
+Nx = 64;
+Ny = 64;
 c = 2.5e-9;                          % cell size
 
 % N = 201;                           % number of data files
@@ -49,8 +49,8 @@ T = 'yes';
 
 %% Files folder and files rename
 
-dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\gradient+gaussianspot\';
-simulationFolder = 'nanodot_320nm_thermal_205K_Gaussian_cell_2.5nm\';
+dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\temperature\static\';
+simulationFolder = 'temperature_static_320nm_30K\';
 
 folder = [dailyFolder simulationFolder];            % folder containing files
 PythonScript = 'batchRenamer.py';                   % Python rename script
@@ -174,14 +174,26 @@ for ii = 1:N
         nprime = n;
         mprime = m;
     else
-        A = Mmat(n-dMax:n+dMax,m-dMax:m+dMax);
-        [maxMz,ind] = max(abs(A(:)));
-        nprime = n;
-        mprime = m;
-        [n,m] = ind2sub(size(A),ind);
-        n = n - dMax - 1 + nprime;
-        m = m - dMax - 1 + mprime;
-        
+        try 
+            A = Mmat(n-dMax:n+dMax,m-dMax:m+dMax);
+            [maxMz,ind] = max(abs(A(:)));
+            nprime = n;
+            mprime = m;
+            [n,m] = ind2sub(size(A),ind);
+            n = n - dMax - 1 + nprime;
+            m = m - dMax - 1 + mprime;
+        catch
+            disp('Warning: peak too close to edge')
+            [maxMz,ind] = max(abs(Mmat(:)));
+            [n_prime,m_prime] = ind2sub(size(Mmat),ind);
+            if (n_prime>1 && n_prime< Nx && m_prime > 2 && m_prime<(Ny-1))
+                n = n_prime;
+                m = m_prime;
+            else
+                n = nprime;
+                m = mprime;
+            end
+        end
         clear A
     end
     
@@ -221,8 +233,17 @@ offLimitsEvent = 0;
 
 % replace unphysical peak positions with a weighted mean
 for jj = 1:length(indices)
+    try
     R(indices(jj)) = 1/3 * (0.5*R(indices(jj)-2) + R(indices(jj)-1) + R(indices(jj)+1) + 0.5*R(indices(jj)+2));
     offLimitsEvent = offLimitsEvent + 1;
+    catch 
+     R(indices(jj)) = (2*R(indices(jj)-1)- R(indices(jj)-2)); 
+     disp('Warning: events at the end might be unreliable')
+    end
+end
+
+if offLimitsEvent >0
+    disp('Warning: unphysical peak positions found. Removing...')
 end
 
 % velocity of vortex core
