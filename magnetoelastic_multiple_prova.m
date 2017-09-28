@@ -82,32 +82,42 @@ for kk = init:N
             if (abs(MmatX(ii,jj)) > 1e-10) && (abs(MmatY(ii,jj)) > 1e-10)
                 mx = MmatX(ii,jj);
                 my = MmatY(ii,jj);
-                dx =  ii - (Nx + 1)/2;
-                dy =  jj - (Ny + 1)/2;
+                dx =  (ii - (Nx + 1)/2);
+                dy =  -(jj - (Ny + 1)/2);
                 theta = [theta; atan2d(dy,dx)];
-                phi = [phi; atan2d(my,mx)];
+                phi = [phi; atan2d(mx,my)];
+%                 phi = [phi;acosd(mx)];
             end
         end
     end
 end 
 %%
-thetaMatrix = reshape(theta,[],N);
-phi = reshape(phi,[], N);
-
-thetaMatrix = thetaMatrix + 180;
+ thetaMatrix = reshape(theta,[],N);
+ phi = reshape(phi,[], N);
+%%
+% % thetaMatrix = thetaMatrix + 180;
 [thetaVector,I] = sort(thetaMatrix(:,1));
-phi_natural = thetaVector + k*90;
 
 for ind = init:N
-    p_temp = phi(:,ind);
-    p_temp2 = p_temp(I) + k*90;
-    p_temp2(thetaVector >= 180) = 360 + p_temp2(thetaVector >= 180);
-    phi(:,ind) = p_temp2;
+    phi(:,ind) = circshift(phi(I,ind),-20,1) - 90;
+    phitemp = phi(:,ind);
+    phitemp(thetaVector < 0) = phitemp(thetaVector <0) + 360;
+    phi(:,ind) = circshift(phitemp,-40,1);
 end
 
-delta_phi = phi - phi_natural*ones(1,N);
-%% Plot
-
+thetaVector = thetaVector + 180;
+% phi_natural = thetaVector + k*90;
+% 
+% for ind = init:N
+%     p_temp = phi(:,ind);
+%    p_temp2 = p_temp(I);% + k*90;
+% %     p_temp2(thetaVector >= 180) = 180 - p_temp2(thetaVector >= 180);
+%     phi(:,ind) = p_temp2;    
+% end
+% 
+% delta_phi = phi - phi_natural*ones(1,N);
+% %% Plot
+% 
 baRatio = zeros(N,1);
 XX = thetaVector(1:end/2);
 
@@ -136,7 +146,7 @@ saveas(gcf, [folder '\phi'], 'fig')
 
 for index = 1:N
     YY = phi(1:end/2,index);
-    fittedCurve = fit(XX,YY,'atan2d(-1/c^2 * cosd(x),sind(x)) + p*90','StartPoint', [1, 1]);
+    fittedCurve = fit(XX,YY,'atan2d(-cosd(x),c^2 * sind(x)) + p*90','StartPoint', [1, 1]);
     baRatio(index) = fittedCurve.c;
 end
 
@@ -160,29 +170,29 @@ fclose(fileID);
 
 
 
-
-%%
-figure
-
-% This is to get the "true" unstressed state
-% useful in thick dots 
-phi_natural = phi(:,1);
-%
-
-for index = init:3:N
-plot(thetaVector,phi(:,index) - phi_natural,'Marker','.','LineWidth',1.3,'Markerfacecolor','auto','MarkerSize',15);
-hold on
-end
-
-g = 0.5;
-plot(thetaVector, zeros(length(thetaVector)),':','linewidth',1.5,'color',g*[1 1 1])
-xlim([min(thetaVector) max(thetaVector)])
-xlabel('\theta  [°]')
-ylabel('\Delta\phi  [°]')
-box off
-lgd = legend(str,'location','southeast');
-legend('boxoff')
-hold off
-title('Deviation in spin angle from the unstressed state') 
-saveas(gcf, [folder '\deltaphi'], 'fig')
-   
+% 
+% % %%
+% % figure
+% % 
+% % % This is to get the "true" unstressed state
+% % % useful in thick dots 
+% % phi_natural = phi(:,1);
+% % %
+% % 
+% % for index = init:3:N
+% % plot(thetaVector,phi(:,index) - phi_natural,'Marker','.','LineWidth',1.3,'Markerfacecolor','auto','MarkerSize',15);
+% % hold on
+% % end
+% % 
+% % g = 0.5;
+% % plot(thetaVector, zeros(length(thetaVector)),':','linewidth',1.5,'color',g*[1 1 1])
+% % xlim([min(thetaVector) max(thetaVector)])
+% % xlabel('\theta  [°]')
+% % ylabel('\Delta\phi  [°]')
+% % box off
+% % lgd = legend(str,'location','southeast');
+% % legend('boxoff')
+% % hold off
+% % title('Deviation in spin angle from the unstressed state') 
+% % saveas(gcf, [folder '\deltaphi'], 'fig')
+%    

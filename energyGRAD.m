@@ -33,7 +33,7 @@ stills = 'y';
 %% Files folder and files rename
 
 dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\gradient+gaussianspot\';
-simulationFolder = 'nanodot_thermal_gradient_ENERGY\';
+simulationFolder = 'nanodot_thermal_uniform_ENERGY\';
 
 folder = [dailyFolder simulationFolder];            % folder containing files
 PythonScript = 'batchRenamer.py';                   % Python rename script
@@ -140,16 +140,28 @@ end
 
 %%
 Edfinal = Edtot/Nfiles;
+Amat = Edfinal == 0;
+meanEx = sum(Edfinal,1)./(N - sum(Amat,1));
 figure
-plot(x*1e9,mean(Edfinal,1),'linewidth',1.3)
+plot(x*1e9,meanEx,'linewidth',1.3)
 xlabel('x [nm]')
 ylabel('Average E density as a function of x [J \cdot m^{-3}]') 
-saveas(gcf, [folder '\Etot_profile'], 'fig')
+saveas(gcf, [folder '\Etot_profile_x'], 'fig')
 
 figure
-Edfinal(Edfinal> 3.5e4) = 0;
+meanEy = sum(Edfinal,2)./(N - sum(Amat,2));
+plot(y*1e9,meanEy,'linewidth',1.3)
+xlabel('y [nm]')
+ylabel('Average E density as a function of y [J \cdot m^{-3}]') 
+saveas(gcf, [folder '\Etot_profile_y'], 'fig')
+
+Edfinal(Amat) = NaN;
+
+figure
+% Edfinal(Edfinal> 3.5e4) = 0;
 imagesc(Edfinal)
 colorbar
+caxis([min(min(Edfinal)) 3.5e4])
 xlabel('x')
 ylabel('y')
 title('E density [J \cdot m^{-3}]')

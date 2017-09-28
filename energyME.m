@@ -18,7 +18,7 @@ close all
 
 % Nx = 128;
 % Ny = 128;
-c = 2.5e-9;                          % cell size
+c = 1e-9;                          % cell size
 cz = 5e-9;
 nz = 4;
 
@@ -40,21 +40,20 @@ nFit = 2;                           % number of fitting points (nFit*2 + 1)
 rename = true;
 
 % saving of 3D stills
-stills = 'y';
+stills = 'n';
 
 %% Files folder and files rename
 
 dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\elastic\static\normal\';
-simulationFolder = 'magnetoelastic_energy_320nm_2.5nm_tot\tot\';
+simulationFolder = 'magnetoelastic_energy_320nm_prova_2\tot\';
 
-folder = [dailyFolder simulationFolder];            % folder containing files
-PythonScript = 'batchRenamer.py';                   % Python rename script
-
-% calls the MATLAB wrapper to a pyhton function (requires python 3.5 or
+folder = [dailyFolder simulationFolder];            % folder  python 3.5 or
 % above)
 
 if rename
+PythonScript = 'batchRenamer.py';                   % Python rename script
     try
+% calls the MATLAB wrapper to a pyhton function (requires
         renameFiles(folder,PythonScript);
     catch
         disp('Error: files already renamed. Continuing execution...')
@@ -89,7 +88,7 @@ y = linspace(-c/2*(N-1),c/2*(N-1),N);
 [X,Y] = meshgrid(x,y);
 
 if stills == 'y'
-    [Xq,Yq] = meshgrid(linspace(min(x),max(x),length(x)*5)*1e9);
+    [Xq,Yq] = meshgrid(linspace(min(x),max(x),length(x)*2)*1e9);
 end
 
 r = linspace(0,c*(N-1)/2,N/2); % The vector of values of r to integrate
@@ -114,7 +113,7 @@ for ii = 1:Nfiles
     Ed = reshape(Evec,[N,N]);
     Ed = rot90(Ed,3);
     %%
-    EdTensor(:,:,ii) = Ed;
+%     EdTensor(:,:,ii) = Ed;
     %%
     clear Evec
     %%
@@ -133,17 +132,20 @@ for ii = 1:Nfiles
     energyCirc(:,ii) = gradient(cumEnergy(:,ii),r);
     
     if stills == 'y'
+%         surf(Xq(1,:),Yq(:,1),griddata(X*1e9,Y*1e9,Ed,Xq,Yq,'cubic'),'EdgeColor','none');
+%         hold on
         imagesc(Xq(1,:),Yq(:,1),griddata(X*1e9,Y*1e9,Ed,Xq,Yq,'cubic'))
         box off
-        axis equal
+%         axis equal
         colormap jet
         colorbar
-        caxis([-1.5 20]*1e4);
+        caxis([0 10]*1e4);
         xlim([min(x) max(x)]*1e9)
         ylim([min(y) max(y)]*1e9)
+        grid off
         xlabel('x [nm]')
         ylabel('y [nm]')
-        title('Demagnetizing energy density (interpolated) [J \cdot m^{-3}]')
+        title('Total energy density (interpolated) [J \cdot m^{-3}]')
         print([folder 'A_' num2str(ii)],'-r300','-dpng')
         close(figure)
     end
@@ -152,8 +154,8 @@ end
 %%
 
 figure
-for ii = 1:3:Nfiles
-plot(r,cumEnergy(:,ii),'linewidth',1.2);
+for ii = 1:1:Nfiles
+plot(r,cumEnergy(:,ii),'linewidth',1.4);
 % Plot the cumulative integrated area vs radius
 hold on
 end
@@ -164,8 +166,8 @@ hold off
 saveas(gcf, [folder '\Ed_tot_r'], 'fig')
 
 figure
-for ii = 1:3:Nfiles
-plot(r,energyCirc(:,ii),'linewidth',1.2);
+for ii = 1:1:Nfiles
+plot(r*1e9,energyCirc(:,ii),'linewidth',1.4);
 % Plot the cumulative integrated area vs radius
 hold on
 end
@@ -176,8 +178,8 @@ hold off
 saveas(gcf, [folder '\Ed_radius'], 'fig')
 
 figure
-for ii = 1:3:Nfiles
-plot(r,energyCirc(:,ii)./(2*pi*r'),'linewidth',1.2);
+for ii = 1:1:Nfiles
+plot(r*1e9,energyCirc(:,ii)./(2*pi*r'),'linewidth',1.4);
 % Plot the cumulative integrated area vs radius
 hold on
 end
@@ -188,13 +190,13 @@ title('Demagnetizing energy per unit area (averaged around the circumference)')
 hold off
 saveas(gcf, [folder '\Ed_area'], 'fig')
 %%
-
-CC = c*ones(N,1);
-Etot = squeeze(4*cz*c^2*trapz(trapz(EdTensor)));
-
-figure
-plot(Ku,Etot,'linewidth',1.2)
-box off
-xlabel('K_{u1} [J \cdot m^{-3}]')
-ylabel('Total E_d [J]')
-saveas(gcf, [folder '\Ed_tot'], 'fig')
+% 
+% CC = c*ones(N,1);
+% Etot = squeeze(4*cz*c^2*trapz(trapz(EdTensor)));
+% 
+% figure
+% plot(Ku,Etot,'linewidth',1.2)
+% box off
+% xlabel('K_{u1} [J \cdot m^{-3}]')
+% ylabel('Total E_d [J]')
+% saveas(gcf, [folder '\Ed_tot'], 'fig')

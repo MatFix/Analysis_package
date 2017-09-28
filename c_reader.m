@@ -6,7 +6,7 @@ close all
 
 Nx = 128;
 Ny = 128;
-c = 3.90625e-9;                          % cell size
+c = 2.5e-9;                          % cell size
 
 k = -1;                            % handedness
 
@@ -17,7 +17,7 @@ rename = true;
 %% Files folder and files rename
 
 dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\elastic\static\normal\';
-simulationFolder = 'magnetoelastic_static_rings_500nm_ME0e-6\';
+simulationFolder = 'magnetoelastic_static_rings_320nm_ME2000e-6\';
 
 folder = [dailyFolder simulationFolder];            % folder containing files
 PythonScript = 'batchRenamer.py';                   % Python rename script

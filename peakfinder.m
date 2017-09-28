@@ -16,8 +16,8 @@ close all
 
 %% Simulation parameters
 
-Nx = 64;
-Ny = 64;
+Nx = 128;
+Ny = 128;
 c = 2.5e-9;                          % cell size
 
 % N = 201;                           % number of data files
@@ -50,7 +50,7 @@ T = 'yes';
 %% Files folder and files rename
 
 dailyFolder = 'D:\Program Files\mumax\Simulazioni\NUOVE\temperature\static\';
-simulationFolder = 'temperature_static_320nm_30K\';
+simulationFolder = 'temperature_static3\';
 
 folder = [dailyFolder simulationFolder];            % folder containing files
 PythonScript = 'batchRenamer.py';                   % Python rename script
@@ -113,7 +113,7 @@ if stills
     [XI,YI] = meshgrid(linspace(-1,1,rf*Nx),linspace(-1,1,rf*Ny));
     h = waitbar(0,'Stills creation in progress');
 end
-
+N = N-4;
 % main loop
 for ii = 1:N
     % files reading
@@ -387,7 +387,7 @@ if max(time) > tCO
     nbins = 40;
     Rad = sqrt(R(AA,1).^2 + R(AA,2).^2);
     %cut data beyond threshold
-    thresholdCutoff = 15e-9;
+    thresholdCutoff = 8e-9;
     edges = linspace(0,thresholdCutoff,nbins+1);
     [N,edges] = histcounts(Rad,edges);
     edges(1) = [];
